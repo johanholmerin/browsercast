@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Browsercast</title>
+
+  <link rel="stylesheet" href="styles.css">
+
+  <script type="module">
+    import { initializeCastApi } from './sender/sender.js';
+
+    window['__onGCastApiAvailable'] = isAvailable => {
+      if (isAvailable) initializeCastApi();
+      else document.documentElement.classList.add('unsupported');
+    };
+  </script>
+  <script
+    src="https://www.gstatic.com/cv/js/sender/v1/cast_sender.js?loadCastFramework=1"
+    async
+  ></script>
+  <script nomodule>
+    document.documentElement.classList.add('unsupported');
+  </script>
+
+  <script
+    src="https://unpkg.com/focus-visible@4.0.1/dist/focus-visible.js"
+    async
+  ></script>
+  <script src="sender/range-progress.js" async></script>
+</head>
+<body>
+  <noscript class="message">Enable Javascript</noscript>
+  <div class="message message--unsupported">You browser is not supported</div>
+
+  <input class="file-input" type="file" title="Select file" multiple autofocus>
+
+  <div class="file-select">Drag files here or click to select</div>
+
+  <div class="controls">
+    <button class="controls__button play-button" disabled></button>
+    <div class="controls__time time-label">0:00 / 0:00</div>
+    <input
+      type="range"
+      class="controls__range progress-range"
+      step="any"
+      value="0"
+      max="0"
+      disabled
+    >
+
+    <button class="controls__button volume-button" disabled></button>
+    <input
+      type="range"
+      class="controls__range volume-range"
+      step="any"
+      value="1"
+      max="1"
+      disabled
+    >
+
+    <button class="controls__button subtitles-button" hidden></button>
+
+    <button
+      is="google-cast-button"
+      class="controls__button cast-button"
+    ></button>
+  </div>
+</body>
+</html>

@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Browsercast</title>
+
+  <script
+    src="//www.gstatic.com/cast/sdk/libs/caf_receiver/v3/cast_receiver_framework.js"
+    defer
+  ></script>
+  <script
+    src="//www.gstatic.com/cast/sdk/libs/mediaplayer/1.0.0/media_player.js"
+    defer
+  ></script>
+  <script src="receiver/receiver.js" type="module"></script>
+
+  <style>
+    body {
+      --progress-color: #4184f4;
+    }
+  </style>
+</head>
+<body>
+  <cast-media-player></cast-media-player>
+</body>
+</html>
