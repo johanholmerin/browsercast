@@ -7,7 +7,7 @@ import { blobToArrayBuffer } from './utils.js';
 /**
  * Cast SDK App ID
  */
-const APP_ID = '4511BCAC'
+const APP_ID = '4511BCAC';
 
 const MEDIA_FILE_NAME = 'MEDIA_FILE';
 
