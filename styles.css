@@ -120,6 +120,19 @@ body {
 .controls__range {
   -webkit-appearance: none;
   --range-ratio: 0;
+  background: none;
+  height: 100%;
+  min-width: 0;
+  flex: 1;
+  margin: 0 8px;
+  padding: 0;
+  box-sizing: border-box;
+}
+.controls__range:focus {
+  outline: none;
+}
+.controls__range::-webkit-slider-runnable-track {
+  height: 2px;
   background: linear-gradient(
     to right,
     #4184f4 0%,
@@ -127,19 +140,6 @@ body {
     #dadada calc(100% * var(--range-ratio)),
     #dadada 100%
   );
-  height: 100%;
-  min-width: 0;
-  flex: 1;
-  margin: 0 8px;
-  padding: 0;
-  box-sizing: border-box;
-  height: 2px;
-}
-.controls__range:focus {
-  outline: none;
-}
-.controls__range::-webkit-slider-runnable-track {
-  height: 2px;
 }
 .controls__range::-webkit-slider-thumb {
   -webkit-appearance: none;
