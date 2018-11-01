@@ -57,11 +57,19 @@ export function initializeCastApi() {
  * Slice file range and send
  */
 async function sendRange({ msg: start, id }) {
-  // Chrome doesn't support sending blobs over WebRTC
-  // https://bugs.chromium.org/p/chromium/issues/detail?id=422734
-  const range = await blobToArrayBuffer(
-    STATE.media.slice(start, start + SEGMENT_SIZE)
-  );
+  const range = (await new Promise(res => {
+    const stream = STATE.media.createReadStream({
+      start,
+      end: start + SEGMENT_SIZE - 1
+    });
+    stream.once('data', res);
+  })).buffer.slice(0, SEGMENT_SIZE);
+
+//   // Chrome doesn't support sending blobs over WebRTC
+//   // https://bugs.chromium.org/p/chromium/issues/detail?id=422734
+//   const range = await blobToArrayBuffer(
+//     STATE.media.slice(start, start + SEGMENT_SIZE)
+//   );
   // ID and data are sent in separate messages directly
   // after each other. Relies on WebRTC being ordered.
   peer.send(JSON.stringify(id));

@@ -54,7 +54,22 @@ function render() {
   fileSelect.classList.toggle('file-select--selected', !!STATE.media);
 }
 
-async function loadFiles(files) {
+async function loadFiles([torrentFile]) {
+  const client = new WebTorrent();
+
+  client.add(torrentFile, torrent => {
+    const media = torrent.files.find(file => isMedia(file.name));
+
+    STATE.media = media;
+    STATE.media.type = 'video/mp4';
+    STATE.media.size = media.length;
+    load();
+  });
+
+
+
+
+  return;
   const media = files.find(file => isMedia(file.name));
   const subtitles = files.find(file => isSubtitles(file.name));
 
