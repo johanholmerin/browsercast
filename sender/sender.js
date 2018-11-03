@@ -44,6 +44,7 @@ export function initializeCastApi() {
     () => {
       STATE.volume = player.isMuted ? 0 : player.volumeLevel;
       STATE.currentTime = player.currentTime;
+      STATE.duration = player.duration;
       STATE.playing =
         player.playerState === chrome.cast.media.PlayerState.PLAYING ||
         player.playerState === chrome.cast.media.PlayerState.BUFFERING;
@@ -53,15 +54,33 @@ export function initializeCastApi() {
   initRTC();
 }
 
+function getRange(start) {
+  // Local file
+  if (STATE.media instanceof Blob) {
+    // Chrome doesn't support sending blobs over WebRTC
+    // https://bugs.chromium.org/p/chromium/issues/detail?id=422734
+    return blobToArrayBuffer(STATE.media.slice(start, start + SEGMENT_SIZE));
+  }
+
+  // Torrent
+  return new Promise((res, rej) => {
+    const stream = STATE.media.createReadStream({
+      start,
+      end: start + SEGMENT_SIZE - 1
+    });
+    stream.once('data', data => {
+      res(data.buffer.slice(0, SEGMENT_SIZE));
+    });
+    stream.once('error', rej);
+  });
+}
+
 /**
  * Slice file range and send
  */
 async function sendRange({ msg: start, id }) {
-  // Chrome doesn't support sending blobs over WebRTC
-  // https://bugs.chromium.org/p/chromium/issues/detail?id=422734
-  const range = await blobToArrayBuffer(
-    STATE.media.slice(start, start + SEGMENT_SIZE)
-  );
+  const range = await getRange(start);
+
   // ID and data are sent in separate messages directly
   // after each other. Relies on WebRTC being ordered.
   peer.send(JSON.stringify(id));

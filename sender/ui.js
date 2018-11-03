@@ -12,8 +12,11 @@ import {
   blobToText,
   isMedia,
   isSubtitles,
+  isTorrent,
   toVtt,
-  loadDataTransferItems
+  loadDataTransferItems,
+  loadWebTorrent,
+  getMime
 } from './utils.js';
 
 const fileInput = document.querySelector('.file-input');
@@ -54,7 +57,30 @@ function render() {
   fileSelect.classList.toggle('file-select--selected', !!STATE.media);
 }
 
-async function loadFiles(files) {
+function loadFiles(files) {
+  if (isTorrent(files[0].name)) {
+    loadTorrent(files[0]);
+  } else {
+    play(files);
+  }
+}
+
+async function loadTorrent(hashOrFile) {
+  await loadWebTorrent();
+  const client = new WebTorrent();
+
+  client.add(hashOrFile, torrent => {
+    // Add required fields to files
+    torrent.files.forEach(file => {
+      file.type = getMime(file.name);
+      file.size = file.length;
+    });
+
+    play(torrent.files);
+  });
+}
+
+async function play(files) {
   const media = files.find(file => isMedia(file.name));
   const subtitles = files.find(file => isSubtitles(file.name));
 
@@ -67,7 +93,8 @@ async function loadFiles(files) {
     }
   }
 
-  if (subtitles) {
+  // Local file
+  if (subtitles instanceof Blob) {
     STATE.subtitles = {
       value: `data:text/vtt,${
         toVtt(await blobToText(subtitles), subtitles.name)
@@ -78,10 +105,14 @@ async function loadFiles(files) {
 
   load();
 
-  if (media) {
+  // Local file
+  if (media instanceof Blob) {
     const { thumbnail, duration } = await getVideoInfo(media);
     STATE.thumbnail = thumbnail && URL.createObjectURL(thumbnail);
     STATE.duration = duration;
+  } else {
+    STATE.thumbnail = undefined;
+    STATE.duration = 0;
   }
 }
 
@@ -138,3 +169,21 @@ fileSelect.addEventListener('drop', async event => {
     loadFiles(Array.from(event.dataTransfer.files));
   }
 });
+
+/**
+ * TORRENT HASH
+ */
+
+if (location.hash.length > 1) {
+  const hash = decodeURIComponent(location.hash.slice(1)).trim();
+  if (hash) loadTorrent(hash);
+}
+
+// Register a protocol handler for magnet links
+if ('registerProtocolHandler' in navigator) {
+  navigator.registerProtocolHandler(
+    'magnet',
+    `${location.href.replace(location.hash, '')}#%s`,
+    'Browsercast'
+  );
+}

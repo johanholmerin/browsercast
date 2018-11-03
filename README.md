@@ -32,3 +32,8 @@ the Service Worker.
 
 Initial load and seeking can be slower compared to using a server. This seems to
 be caused by the size limit of packets. While watching this is not a problem.
+
+## WebTorrent
+
+It is now possible to stream torrents using WebTorrent by selecting a torrent
+file.

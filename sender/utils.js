@@ -8,6 +8,8 @@ const VIDEO_EXTENSIONS = ['mp4', 'webm'];
 const VTT_EXTENSION = 'vtt';
 const SUBTITLES_EXTENSIONS = [VTT_EXTENSION, 'srt'];
 
+const TORRENT_EXTENSION = 'torrent';
+
 /**
  * Get duration and thumbnail from media
  */
@@ -111,6 +113,20 @@ export function isSubtitles(name) {
   return hasExtensions(name, SUBTITLES_EXTENSIONS);
 }
 
+export function isTorrent(name) {
+  return hasExtension(name, TORRENT_EXTENSION);
+}
+
+/**
+ * Naive way of getting MIME type
+ */
+export function getMime(name) {
+  const extension = name.split('.').pop();
+  if (isVideo(name)) return `video/${extension}`;
+  if (isAudio(name)) return `audio/${extension}`;
+  return '';
+}
+
 /**
  * List files non-recursively
  * @param {DataTransferItem[]} items
@@ -143,4 +159,11 @@ export async function loadDataTransferItems(items) {
 export function toVtt(string, name) {
   if (hasExtension(name, VTT_EXTENSION)) return string;
   return srt2vtt(string);
+}
+
+/**
+ * Dynamically load WebTorrent when needed
+ */
+export function loadWebTorrent() {
+  return import('https://unpkg.com/webtorrent@0.102.4/webtorrent.min.js');
 }

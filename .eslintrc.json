@@ -10,7 +10,8 @@
   },
   "globals": {
     "chrome": true,
-    "cast": true
+    "cast": true,
+    "WebTorrent": true
   },
   "rules": {
     "no-console": "off",
