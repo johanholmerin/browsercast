@@ -1,3 +1,5 @@
+# Due to a recent Chromecast update, this no longer works
+
 # Browsercast
 
 Cast local files to Chromecast directly from the browser. No install needed.
