@@ -12,12 +12,6 @@ const APP_ID = '4511BCAC';
 const MEDIA_FILE_NAME = 'MEDIA_FILE';
 
 /**
- * Maximum size of message supported by Chrome.
- * Should be RTCSctpTransport.maxMessageSize when supported.
- */
-const SEGMENT_SIZE = 64 * 1000;
-
-/**
  * Subtitle track ID
  */
 const TRACK_ID = 1;
@@ -59,17 +53,19 @@ function getRange(start) {
   if (STATE.media instanceof Blob) {
     // Chrome doesn't support sending blobs over WebRTC
     // https://bugs.chromium.org/p/chromium/issues/detail?id=422734
-    return blobToArrayBuffer(STATE.media.slice(start, start + SEGMENT_SIZE));
+    return blobToArrayBuffer(
+      STATE.media.slice(start, start + peer.SEGMENT_SIZE)
+    );
   }
 
   // Torrent
   return new Promise((res, rej) => {
     const stream = STATE.media.createReadStream({
       start,
-      end: start + SEGMENT_SIZE - 1
+      end: start + peer.SEGMENT_SIZE - 1
     });
     stream.once('data', data => {
-      res(data.buffer.slice(0, SEGMENT_SIZE));
+      res(data.buffer.slice(0, peer.SEGMENT_SIZE));
     });
     stream.once('error', rej);
   });

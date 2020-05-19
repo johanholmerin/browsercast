@@ -37,6 +37,10 @@ export default class Peer extends EventTarget {
     this[`_on${event.type}`](event);
   }
 
+  get SEGMENT_SIZE() {
+    return this._pc.sctp.maxMessageSize;
+  }
+
   async _onnegotiationneeded() {
     const offer = await this._pc.createOffer();
     this._pc.setLocalDescription(offer);
