@@ -1,54 +1,35 @@
-import { peer, init as initRTC, disconnect } from './receiver_rtc.js';
+import { peer, init as initRTC } from './receiver_rtc.js';
+import { MIME_CODEC } from '../shared/codec.js';
 
-/**
- * Get data over WebRTC
- */
-function getData({ msg, id }) {
-  return new Promise(res => {
-    let nextIsData = false;
-    peer.on('data', function ondata({ detail: data }) {
-      // ID and data are sent in separate messages directly
-      // after each other. Relies on WebRTC being ordered.
-      if (typeof data === 'string' && JSON.parse(data) === id) {
-        nextIsData = true;
-        return;
-      } else if (!nextIsData) {
-        return;
-      }
+const videoEl = document.querySelector('video');
 
-      peer.off('data', ondata);
-      res(data);
-    });
-    peer.send(JSON.stringify({ msg, id }));
+initRTC();
+
+const mediaSource = new MediaSource();
+let sourceBuffer;
+const callbackQueue = [];
+
+mediaSource.addEventListener('sourceopen', () => {
+  sourceBuffer = mediaSource.addSourceBuffer(MIME_CODEC);
+  sourceBuffer.mode = 'segments';
+
+  sourceBuffer.addEventListener('updateend', () => {
+    if (callbackQueue.length > 0 && !sourceBuffer.updating) {
+      sourceBuffer.appendBuffer(callbackQueue.shift());
+    }
   });
-}
+});
 
-/**
- * Send request from Service Worker to sender and post back result
- */
-function onmessage(event) {
-  const { id, msg } = event.data;
-  getData({ msg, id }).then(buffer => {
-    navigator.serviceWorker.controller.postMessage({
-      msg: buffer,
-      id
-    }, [buffer]); // Transfer buffer
-  });
-}
+peer.on('data', ({ detail: data }) => {
+  if (mediaSource?.readyState === 'open') {
+    if (!sourceBuffer.updating && callbackQueue.length === 0) {
+      sourceBuffer.appendBuffer(data);
+    } else {
+      callbackQueue.push(data);
+    }
+  }
+});
 
-/**
- * Connect to sender after Service Worker has been successfully registered
- */
-navigator.serviceWorker.register('sw.js', {
-  scope: './'
-}).then(() => {
-  initRTC();
+videoEl.src = URL.createObjectURL(mediaSource);
 
-  navigator.serviceWorker.addEventListener('message', onmessage);
-
-  cast
-    .framework
-    .CastReceiverContext
-    .getInstance()
-    .start();
-}, disconnect);
+cast.framework.CastReceiverContext.getInstance().start();

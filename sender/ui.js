@@ -12,11 +12,8 @@ import {
   blobToText,
   isMedia,
   isSubtitles,
-  isTorrent,
   toVtt,
-  loadDataTransferItems,
-  loadWebTorrent,
-  getMime
+  loadDataTransferItems
 } from './utils.js';
 
 const fileInput = document.querySelector('.file-input');
@@ -28,8 +25,13 @@ const volumeRange = document.querySelector('.volume-range');
 const volumeButton = document.querySelector('.volume-button');
 const subtitlesButton = document.querySelector('.subtitles-button');
 const castButton = document.querySelector('.cast-button');
+const video = document.querySelector('video');
 
 function render() {
+  if (STATE.media && !video.src) {
+    video.src = URL.createObjectURL(STATE.media);
+  }
+
   playButton.classList.toggle('play-button--playing', !!STATE.playing);
   playButton.disabled = !STATE.connected || !STATE.media;
 
@@ -58,26 +60,7 @@ function render() {
 }
 
 function loadFiles(files) {
-  if (isTorrent(files[0].name)) {
-    loadTorrent(files[0]);
-  } else {
-    play(files);
-  }
-}
-
-async function loadTorrent(hashOrFile) {
-  await loadWebTorrent();
-  const client = new WebTorrent();
-
-  client.add(hashOrFile, torrent => {
-    // Add required fields to files
-    torrent.files.forEach(file => {
-      file.type = getMime(file.name);
-      file.size = file.length;
-    });
-
-    play(torrent.files);
-  });
+  play(files);
 }
 
 async function play(files) {
@@ -169,21 +152,3 @@ fileSelect.addEventListener('drop', async event => {
     loadFiles(Array.from(event.dataTransfer.files));
   }
 });
-
-/**
- * TORRENT HASH
- */
-
-if (location.hash.length > 1) {
-  const hash = decodeURIComponent(location.hash.slice(1)).trim();
-  if (hash) loadTorrent(hash);
-}
-
-// Register a protocol handler for magnet links
-if ('registerProtocolHandler' in navigator) {
-  navigator.registerProtocolHandler(
-    'magnet',
-    `${location.href.replace(location.hash, '')}#%s`,
-    'Browsercast'
-  );
-}

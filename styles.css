@@ -8,6 +8,15 @@ body {
   overflow: hidden;
 }
 
+video {
+  position: fixed;
+  z-index: 1000;
+  top: 0;
+  left: 0;
+  width: 50vw;
+  height: 50vh;
+}
+
 [disabled] {
   -webkit-filter: grayscale(1);
 }
