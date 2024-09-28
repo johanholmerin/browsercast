@@ -10,7 +10,7 @@ export const CUSTOM_CHANNEL = 'urn:x-cast:browsercast';
 const iceServers = [{
   urls: 'stun:stun.l.google.com:19302'
 }, {
-  urls: 'stun:global.stun.twilio.com:3478?transport=udp'
+  urls: 'stun:global.stun.twilio.com:3478'
 }];
 
 /**
